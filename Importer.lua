@@ -1,5 +1,5 @@
 
-bagGuid = "147ccd"
+bagGuid = "d39ae3"
 
 
 -- Lukerazor export format has no stats, and linking profiles for BS is probably going to be a pain in the ass
@@ -345,9 +345,58 @@ function parseLRVehicle(v, team)
         vehicle.cans = vehicle.cans + u.cans
     end
 
+    vehicle = adjustStats(vehicle)
+
     return vehicle
 
 end
+
+
+function adjustStats(v)
+    for i, perk in ipairs(v.perks) do 
+        if perk.name == "Expertise" then
+            v.handling = v.handling + 1
+        end
+    end
+
+    for i, upgrade in ipairs(v.upgrades) do
+        if upgrade.name == "Armour Plating" then
+            v.hull = v.hull + 2
+
+        elseif upgrade.name == "Experimental Nuclear Engine" then 
+            if v.maxGear <= 4 then 
+                v.maxGear = v.maxGear + 2
+            else 
+                v.maxGear = 6
+            end
+
+        elseif upgrade.name == "Extra Crewmember" then
+            v.crew = v.crew + 1
+
+        elseif upgrade.name == "Tank tracks" then
+            v.maxGear = v.maxGear - 1
+            v.handling = v.handling + 1
+
+        elseif upgrade.name == "Prison Vehicle" then
+            v.hull = v.hull - 2
+
+        elseif uprade.name == "MicroPlate Armour" then 
+            v.hull = v.hull + 2
+        end
+    end
+
+    for i, weapon in ipairs(v.weapons) do
+        if v.sponsor == "Rutherford" then 
+            if weapon.ammo == 3 then
+                weapon.ammo = 4
+            end
+        end
+    end
+
+    return v  
+
+end
+
 
 function spawnDash(i, callback)
   local bag = getObjectFromGUID(bagGuid)
