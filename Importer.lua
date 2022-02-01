@@ -62,7 +62,9 @@ weaponStats = {
     { name="RC Car Bombs", type=", Dropped", attack="4D6", range="Short", ammo=3, slots=0, rules="See rules", cans=3 },
     { name="Sentry Gun", type=", Dropped", attack="2D6", range="Dropped", ammo=3, slots=0, rules="See rules", cans=3 },
     { name="Smoke Dropper", type=", Dropped", attack="-", range="Large, Burst", ammo=3, slots=0, rules="Provides, cover", cans=1 },
-    { name="Wrecking Ball", type="", attack="*", range="Short", ammo=0, slots=3, rules="See rules", cans=3 }
+    { name="Wrecking Ball", type="", attack="*", range="Short", ammo=0, slots=3, rules="See rules", cans=3 },
+    { name="Ram", type = "Smash", attack="2D6", range="-",ammo=0,slots=1, rules = "No hazards gained during collisions on declared facing", cans=4},
+    { name="Exploding Ram", type = "Smash", attack="6D6", range="-",ammo=1,slots=1, rules = "Highly Explosive. Limit of 1", cans=4}
 }
 
 upgradeStats = {
@@ -360,6 +362,7 @@ function adjustStats(v)
     end
 
     for i, upgrade in ipairs(v.upgrades) do
+
         if upgrade.name == "Armour Plating" then
             v.hull = v.hull + 2
 
@@ -372,6 +375,9 @@ function adjustStats(v)
 
         elseif upgrade.name == "Extra Crewmember" then
             v.crew = v.crew + 1
+            if v.sponsor == "Scarlett" then
+                upgrade.cans = 2
+            end
 
         elseif upgrade.name == "Tank tracks" then
             v.maxGear = v.maxGear - 1
@@ -389,6 +395,17 @@ function adjustStats(v)
         if v.sponsor == "Rutherford" then 
             if weapon.ammo == 3 then
                 weapon.ammo = 4
+            end
+        elseif v.sponsor == "Slime" then 
+            if weapon.name == "Ram" then
+                weapon.slots = 0
+            end
+        end
+
+        if weapon.facing == "Turret/360" then
+            if v.type == "Tank" then
+            else
+            weapon.cans = weapon.cans * 3
             end
         end
     end

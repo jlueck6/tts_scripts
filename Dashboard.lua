@@ -1088,8 +1088,7 @@ function loadVehicle(params)
         end
         loadTextbox("tbWName"..i, name)
 
-        -- TODO Rutherford mod goes here
-        local ammo = numOrDash(w.ammo)
+
         -- TODO Type box is being commandeered for Ammo, as it's a stat people actually use
         loadTextbox("tbWType"..i, ammo)
         loadTextbox("tbWAttack"..i, w.attack)
