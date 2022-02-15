@@ -1083,7 +1083,7 @@ function loadVehicle(params)
         end
 
         local name = w.name
-        if hasTrailer != "None" then
+        if hasTrailer != "None" or v.type == "War Rig" then
             name = name .. " (" .. w.location ..")"
         end
         loadTextbox("tbWName"..i, name)

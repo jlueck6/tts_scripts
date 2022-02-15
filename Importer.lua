@@ -1,5 +1,5 @@
 
-bagGuid = "6a7ef8"
+bagGuid = "9c5eb1"
 
 
 -- Lukerazor export format has no stats, and linking profiles for BS is probably going to be a pain in the ass
@@ -361,6 +361,17 @@ function parseLRVehicle(v, team)
             cans = t.cans,
         })
     end
+
+    if vehicle.sponsor == "Rusty's Bootleggers" then
+        if vehicle.type == "War Rig" then 
+            table.insert(vehicle.upgrades,{
+                name = vehicle.cargo,
+                slots = 0,
+                cans = 0,
+            })
+        end
+    end
+
 
     vehicle = adjustStats(vehicle)
     vehicle = adjustCost(vehicle)
