@@ -1070,7 +1070,7 @@ function loadVehicle(params)
 
 
     -- Determine if we have a trailer, as it affects how weapons display
-    hasTrailer = v.trailer != 0
+    hasTrailer = v.trailer
     --print("loaded statics")
 
 
@@ -1083,7 +1083,7 @@ function loadVehicle(params)
         end
 
         local name = w.name
-        if hasTrailer then
+        if hasTrailer != "None" then
             name = name .. " (" .. w.location ..")"
         end
         loadTextbox("tbWName"..i, name)

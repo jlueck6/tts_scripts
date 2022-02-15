@@ -1,5 +1,5 @@
 
-bagGuid = "d39ae3"
+bagGuid = "6a7ef8"
 
 
 -- Lukerazor export format has no stats, and linking profiles for BS is probably going to be a pain in the ass
@@ -42,7 +42,7 @@ weaponStats = {
     { name="Kinetic Super Booster", type="Shooting", attack="6D6", range="Double", ammo=1, slots=2, rules="Gear +1 instead of damage", cans=6 },
     { name="Magnetic Jammer", type="Shooting", attack="-", range="Double", ammo=0, slots=0, rules="Target can't use Ammo next activation", cans=2 },
     { name="Mortar", type="Shooting", attack="4D6", range="Double", ammo=3, slots=1, rules="Indirect", cans=4 },
-    { name="Rockets", type="Shooting", attack="6D6", range="Double", ammo=3, slots=2, rules="", cans=6 },
+    { name="Rockets", type="Shooting", attack="6D6", range="Double", ammo=3, slots=2, rules="", cans=5 },
     { name="Thumper", type="Shooting", attack="-", range="Medium", ammo=1, slots=2, rules="Electrical. See rules", cans=4 },
     { name="Wall Of Amplifiers", type="Shooting", attack="-", range="Medium", ammo=0, slots=3, rules="See rules", cans=4 },
     { name="Wreck Lobber", type="Shooting", attack="-", range="Double/Dropped", ammo=3, slots=4, rules="See rules", cans=4 },
@@ -70,15 +70,15 @@ weaponStats = {
 upgradeStats = {
     {name="Armour Plating", slots=1, cans=4},
     {name="Experimental Nuclear Engine", slots=0, cans=5},
-    {name="Experimental Teleporter", slots=0, cans=7},
+    {name="Experimental Teleporter", slots=0, cans=7}, 
     {name="Extra Crewmember", slots=0, cans=4},
-    {name="Improvised Sludge Thrower", slots=1, cans=2},
-    {name="Nitro Booster", slots=0, cans=6},
-    {name="Roll Cage", slots=1, cans=4},
+    {name="Improvised Sludge Thrower", slots=1, cans=2}, 
+    {name="Nitro Booster", slots=0, cans=6}, 
+    {name="Roll Cage", slots=1, cans=4}, 
     {name="Tank tracks", slots=1, cans=4},
-    {name="Prison Vehicle", slots=0, cans=-4},
-    {name="Louder Siren", slots=0, cans=2},
-    {name="MicroPlate Armour", slots=0, cans=6}
+    {name="Prison Vehicle", slots=0, cans=0},
+    {name="Louder Siren", slots=0, cans=2}, 
+    {name="MicroPlate Armour", slots=0, cans=6} 
 }
 
 perkStats = {
@@ -154,6 +154,12 @@ perkStats = {
     {name="Momentum", cans=3},
     {name="Purring", cans=6},
     {name="Skiing", cans=6},
+}
+
+trailerStats = {
+    {name="Lightweight Trailer", slots = 0, cans = 4},
+    {name="Middleweight Trailer", slots = "+1", cans = 8},
+    {name="Heavyweight Trailer", slots = "+3", cans = 12},
 }
 
 checkboxes = {
@@ -304,10 +310,12 @@ function parseLRVehicle(v, team)
     vehicle.crew=vClass.crew
     abilities=vClass.abilities
     vehicle.cans=vClass.cans -- this gets updated as we parse
-    vehicle.trailer=0
+    vehicle.trailer= v.trailer
+    vehicle.cargo= v.cargo
     vehicle.weapons={}
     vehicle.upgrades={}
     vehicle.perks={}
+
 
     for i, weapon in ipairs(v.weapons) do
         local w=findByName(weapon.weaponType, weaponStats)
@@ -324,7 +332,6 @@ function parseLRVehicle(v, team)
             cans=w.cans,
             rules=w.rules
         })
-        vehicle.cans = vehicle.cans + w.cans
     end
 
 
@@ -334,20 +341,29 @@ function parseLRVehicle(v, team)
             name = p.name,
             cans = p.cans
         })
-        vehicle.cans = vehicle.cans + p.cans
     end
 
     for i, upgrade in ipairs(v.upgrades) do
         local u = findByName(upgrade.upgradeType, upgradeStats)
         table.insert(vehicle.upgrades, {
             name = u.name,
+            slots= u.slots,
             cans = u.cans,
-            slots=u.slots
+            
         })
-        vehicle.cans = vehicle.cans + u.cans
+    end
+
+    if vehicle.trailer != "None" then
+        local t = findByName(vehicle.trailer .. " Trailer", trailerStats)
+        table.insert(vehicle.upgrades, {
+            name = t.name .. "(".. vehicle.cargo .. ")",
+            slots = t.slots,
+            cans = t.cans,
+        })
     end
 
     vehicle = adjustStats(vehicle)
+    vehicle = adjustCost(vehicle)
 
     return vehicle
 
@@ -385,9 +401,15 @@ function adjustStats(v)
 
         elseif upgrade.name == "Prison Vehicle" then
             v.hull = v.hull - 2
+            if v.type == "Ice Cream Truck" then 
+                upgrade.cans = -3
+            else
+                upgrade.cans = -4
+            end
 
-        elseif uprade.name == "MicroPlate Armour" then 
+        elseif upgrade.name == "MicroPlate Armour" then 
             v.hull = v.hull + 2
+        else
         end
     end
 
@@ -411,6 +433,23 @@ function adjustStats(v)
     end
 
     return v  
+
+end
+
+function adjustCost(v)
+    for i, w in ipairs(v.weapons) do
+        v.cans = v.cans + w.cans
+    end
+    for i, p in ipairs(v.perks) do
+        v.cans = v.cans + p.cans
+    end
+    for i, u in ipairs(v.upgrades) do
+        v.cans = v.cans + u.cans
+    end
+
+    return v
+
+    
 
 end
 
