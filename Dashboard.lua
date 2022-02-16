@@ -1,3 +1,5 @@
+--version 1.1
+
 --[[    Character Sheet Template    by: MrStump
 
 You can set up your own character sheet if you follow these steps.
