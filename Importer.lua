@@ -1,7 +1,7 @@
--- Version 1.1
-bagGuid = "9c5eb1"
+-- Version 1.2
+bagGuid = "147ccd"
 
-
+listIndex = 1
 -- Lukerazor export format has no stats, and linking profiles for BS is probably going to be a pain in the ass
 -- make all the profiles and costs here
 
@@ -70,15 +70,15 @@ weaponStats = {
 upgradeStats = {
     {name="Armour Plating", slots=1, cans=4},
     {name="Experimental Nuclear Engine", slots=0, cans=5},
-    {name="Experimental Teleporter", slots=0, cans=7}, 
+    {name="Experimental Teleporter", slots=0, cans=7},
     {name="Extra Crewmember", slots=0, cans=4},
-    {name="Improvised Sludge Thrower", slots=1, cans=2}, 
-    {name="Nitro Booster", slots=0, cans=6}, 
-    {name="Roll Cage", slots=1, cans=4}, 
+    {name="Improvised Sludge Thrower", slots=1, cans=2},
+    {name="Nitro Booster", slots=0, cans=6},
+    {name="Roll Cage", slots=1, cans=4},
     {name="Tank tracks", slots=1, cans=4},
     {name="Prison Vehicle", slots=0, cans=0},
-    {name="Louder Siren", slots=0, cans=2}, 
-    {name="MicroPlate Armour", slots=0, cans=6} 
+    {name="Louder Siren", slots=0, cans=2},
+    {name="MicroPlate Armour", slots=0, cans=6}
 }
 
 perkStats = {
@@ -182,7 +182,7 @@ checkboxes = {
 
   buttons = {
     {
-        pos   = {-0.403,0.1,0.732},
+        pos   = {-0.903,0.1,0.732},
         height  = 500,
         width = 2000,
         funcName = "ImportCars",
@@ -199,7 +199,37 @@ checkboxes = {
         font_size = 500,
         label     = "Paste Your List Here",
         value     = "",
-        alignment = 2
+        alignment = 2,
+        funcName = "click_textbox"
+    },
+
+    {
+      pos       = {0.1,0.1,0.732},
+      rows      = 1,
+      width     = 5000,
+      font_size = 500,
+      label     = "List Name",
+      value     = "",
+      alignment = 2,
+      funcName = "click_none"
+  },
+  }
+
+   --Add counters that have a + and - button
+   counter = {
+    --[[
+    pos    = the position (pasted from the helper tool)
+    size   = height/width/font_size for counter
+    value  = default starting value for counter
+    hideBG = if background of counter is hidden (true=hidden, false=not)
+    ]]
+    --Handling
+    {
+        pos    = {0.842,0.1, 0.732},
+        size   = 900,
+        value  = 1,
+        hideBG = true,
+        name   = "cListNumber"
     },
   }
   --Set this to true while editing and false when you have finished
@@ -349,7 +379,7 @@ function parseLRVehicle(v, team)
             name = u.name,
             slots= u.slots,
             cans = u.cans,
-            
+
         })
     end
 
@@ -363,7 +393,7 @@ function parseLRVehicle(v, team)
     end
 
     if vehicle.sponsor == "Rusty's Bootleggers" then
-        if vehicle.type == "War Rig" then 
+        if vehicle.type == "War Rig" then
             table.insert(vehicle.upgrades,{
                 name = vehicle.cargo,
                 slots = 0,
@@ -382,7 +412,7 @@ end
 
 
 function adjustStats(v)
-    for i, perk in ipairs(v.perks) do 
+    for i, perk in ipairs(v.perks) do
         if perk.name == "Expertise" then
             v.handling = v.handling + 1
         end
@@ -393,10 +423,10 @@ function adjustStats(v)
         if upgrade.name == "Armour Plating" then
             v.hull = v.hull + 2
 
-        elseif upgrade.name == "Experimental Nuclear Engine" then 
-            if v.maxGear <= 4 then 
+        elseif upgrade.name == "Experimental Nuclear Engine" then
+            if v.maxGear <= 4 then
                 v.maxGear = v.maxGear + 2
-            else 
+            else
                 v.maxGear = 6
             end
 
@@ -412,24 +442,24 @@ function adjustStats(v)
 
         elseif upgrade.name == "Prison Vehicle" then
             v.hull = v.hull - 2
-            if v.type == "Ice Cream Truck" then 
+            if v.type == "Ice Cream Truck" then
                 upgrade.cans = -3
             else
                 upgrade.cans = -4
             end
 
-        elseif upgrade.name == "MicroPlate Armour" then 
+        elseif upgrade.name == "MicroPlate Armour" then
             v.hull = v.hull + 2
         else
         end
     end
 
     for i, weapon in ipairs(v.weapons) do
-        if v.sponsor == "Rutherford" then 
+        if v.sponsor == "Rutherford" then
             if weapon.ammo == 3 then
                 weapon.ammo = 4
             end
-        elseif v.sponsor == "Slime" then 
+        elseif v.sponsor == "Slime" then
             if weapon.name == "Ram" then
                 weapon.slots = 0
             end
@@ -443,7 +473,7 @@ function adjustStats(v)
         end
     end
 
-    return v  
+    return v
 
 end
 
@@ -460,7 +490,7 @@ function adjustCost(v)
 
     return v
 
-    
+
 
 end
 
@@ -481,15 +511,22 @@ function ImportCars()
 
 end
 
-  -- TODO BS is a mess compared to LR for export formats, put a pin in it for now
-  function importBattlescribe()
+function UpdatePreviewName()
+  -- TODO mythically magic #
+  if(listIndex <= #(db.teams))then
+      self.editInput({index=1, value=db.teams[listIndex].teamName})
+  end
+end
+
+-- TODO BS is a mess compared to LR for export formats, put a pin in it for now
+function importBattlescribe()
     local lines = mysplit(text, "\n")
     for i, line in ipairs(lines) do
-      -- print("line " .. line)
-      -- TODO gross workaround for now, need something to find the  [ ]
-      if string.match(line, "Car") then
-          --print("Car " ..line)
-          local object = spawnObjectJSON({
+        -- print("line " .. line)
+        -- TODO gross workaround for now, need something to find the  [ ]
+        if string.match(line, "Car") then
+            --print("Car " ..line)
+            local object = spawnObjectJSON({
               json = [[{
                   "Name": "Die_6",
                   "Transform": {
@@ -514,11 +551,11 @@ end
           })
         end
     end
-  end
+end
 
   function importLukerazor()
     db = JSON.decode(text)
-    team = db.teams[1]
+    team = db.teams[listIndex]
     vehicleExports = {}
     -- first load it all up
     for i, vehicle in ipairs(team.vehicles) do
@@ -567,21 +604,80 @@ end
 
   end
 
+  --Makes counters
+function createCounter()
+    for i, data in ipairs(counter) do
+        --Sets up display
+        local displayNumber = spawnedButtonCount
+        --Sets up label
+        local label = data.value
+        --Sets height/width for display
+        local size = data.size
+        if data.hideBG == true then size = 0 end
+        --Creates button and counts it
+        self.createButton({
+            label=label, click_function="click_none", function_owner=self,
+            position=data.pos, height=size, width=size,
+            font_size=data.size, scale=buttonScale,
+            color=buttonColor, font_color=buttonFontColor
+        })
+
+        spawnedButtonCount = spawnedButtonCount + 1
+
+
+        --Sets up add 1
+        local funcName = "counterAdd"..i
+        local func = function() click_counter(i, displayNumber, 1) end
+        self.setVar(funcName, func)
+        --Sets up label
+        local label = "+"
+        --Sets up position
+        local offsetDistance = (data.size/2 + data.size/4) * (buttonScale[1] * 0.002)
+        local pos = {data.pos[1] + offsetDistance, data.pos[2], data.pos[3]}
+        --Sets up size
+        local size = data.size / 2
+        --Creates button and counts it
+        self.createButton({
+            label=label, click_function=funcName, function_owner=self,
+            position=pos, height=size, width=size,
+            font_size=size, scale=buttonScale,
+            color=buttonColor, font_color=buttonFontColor
+        })
+        spawnedButtonCount = spawnedButtonCount + 1
+
+        --Sets up subtract 1
+        local funcName = "counterSub"..i
+        local func = function() click_counter(i, displayNumber, -1) end
+        self.setVar(funcName, func)
+        --Sets up label
+        local label = "-"
+        --Set up position
+        local pos = {data.pos[1] - offsetDistance, data.pos[2], data.pos[3]}
+        --Creates button and counts it
+        self.createButton({
+            label=label, click_function=funcName, function_owner=self,
+            position=pos, height=size, width=size,
+            font_size=size, scale=buttonScale,
+            color=buttonColor, font_color=buttonFontColor
+        })
+        spawnedButtonCount = spawnedButtonCount + 1
+    end
+end
 
   --Updates saved value for given text box
-  function click_textbox(i, value, selected)
-      text = value
+  function click_textbox(obj, color, input, stillEditing)
+      text = input
+      db = JSON.decode(text)
+      UpdatePreviewName()
+
   end
 
   function createTextbox()
       for i, data in ipairs(textbox) do
           --Sets up reference function
-          local funcName = "textbox"..i
-          local func = function(_,_,val,sel) click_textbox(i,val,sel) end
-          self.setVar(funcName, func)
 
           self.createInput({
-              input_function = funcName,
+              input_function = data.funcName,
               function_owner = self,
               label          = data.label,
               alignment      = data.alignment,
@@ -597,19 +693,44 @@ end
       end
   end
 
-  --Startup procedure
-  function onload(saved_data)
-      if disableSave==true then saved_data="" end
-      if saved_data ~= "" then
-          local loaded_data = JSON.decode(saved_data)
-          ref_buttonData = loaded_data
-      else
-          ref_buttonData = defaultButtonData
-      end
 
-      spawnedButtonCount = 0
-      createCheckbox()
-      createButtons()
-      -- createCounter()
-      createTextbox()
-  end
+  --Applies value to given counter display
+function click_counter(tableIndex, buttonIndex, amount)
+
+    if (db == nil) then
+        return
+    end
+
+    local newIndex = listIndex + amount
+    db = JSON.decode(text)
+
+    -- TODO make some range-snapping happen here, in case of new JSON load
+    if(newIndex < 1 or newIndex > #(db.teams))then
+        return
+    end
+
+    listIndex=newIndex
+
+    self.editButton({index=buttonIndex, label=listIndex})
+    UpdatePreviewName()
+end
+
+  --Dud function for if you have a background on a counter
+function click_none() end
+
+  --Startup procedure
+function onload(saved_data)
+    if disableSave==true then saved_data="" end
+    if saved_data ~= "" then
+      local loaded_data = JSON.decode(saved_data)
+      ref_buttonData = loaded_data
+    else
+      ref_buttonData = defaultButtonData
+    end
+
+    spawnedButtonCount = 0
+    createCheckbox()
+    createButtons()
+    createCounter()
+    createTextbox()
+end
